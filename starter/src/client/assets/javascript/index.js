@@ -6,7 +6,7 @@ let store = {
 	track_name: undefined,
 	player_id: undefined,
 	player_name: undefined,
-	race_id: undefined,
+	race_id: undefined
 }
 
 // We need our javascript to wait until the DOM is loaded
@@ -92,12 +92,16 @@ async function handleCreateRace() {
 	renderAt('#race', renderRaceStartView(store.track_name))
 
 	// TODO - Get player_id and track_id from the store
+	const player_id = store.player_id
+	const track_id = store.track_id
 	
 	// const race = TODO - call the asynchronous method createRace, passing the correct parameters
+	const race = await createRace(player_id, track_id)
 
-	// TODO - update the store with the race id in the response
-	// TIP - console logging API responses can be really helpful to know what data shape you received
-	console.log("RACE: ", race)
+	// Update the store with the race id from the response
+	store.race_id = race.ID;
+	// Log the race response for debugging
+	console.log(`RACE:  ${race}`)
 	// store.race_id = 
 	
 	// The race has been created, now start the countdown
