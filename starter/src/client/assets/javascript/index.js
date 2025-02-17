@@ -6,7 +6,7 @@ let store = {
 	track_name: undefined,
 	player_id: undefined,
 	player_name: undefined,
-	race_id: undefined
+	race_id: undefined,
 }
 
 // We need our javascript to wait until the DOM is loaded
@@ -101,36 +101,43 @@ async function handleCreateRace() {
 	// Update the store with the race id from the response
 	store.race_id = race.ID;
 	// Log the race response for debugging
-	console.log(`RACE:  ${race}`)
+	console.log("RACE:  ",race)
 	// store.race_id = 
 	
 	// The race has been created, now start the countdown
 	// TODO - call the async function runCountdown
-
+	await runCountdown()
 	// TODO - call the async function startRace
+	await startRace()
 	// TIP - remember to always check if a function takes parameters before calling it!
 
 	// TODO - call the async function runRace
+	await runRace()
 }
 
 function runRace(raceID) {
-	return new Promise(resolve => {
+	return new Promise(res => {
 	// TODO - use Javascript's built in setInterval method to get race info (getRace function) every 500ms
-
+		setInterval(() => {
+			getRace(raceID).then(race => {})
+		},500)
 	/* 
 		TODO - if the race info status property is "in-progress", update the leaderboard by calling:
-
-		renderAt('#leaderBoard', raceProgress(res.positions))
 	*/
+		if(res()) {
+			renderAt('#leaderBoard', raceProgress(res.positions))
+		}
+	
 
 	/* 
 		TODO - if the race info status property is "finished", run the following:
-
-		clearInterval(raceInterval) // to stop the interval from repeating
-		renderAt('#race', resultsView(res.positions)) // to render the results view
-		resolve(res) // resolve the promise
 	*/
-	})
+		if(!res()) {
+			clearInterval(raceInterval) // to stop the interval from repeating
+			renderAt('#race', resultsView(res.positions)) // to render the results view
+			resolve(res) // resolve the promise
+		}
+	}).catch(err => console.log(err))
 	// remember to add error handling for the Promise
 }
 
@@ -140,11 +147,17 @@ async function runCountdown() {
 		await delay(1000)
 		let timer = 3
 
-		return new Promise(resolve => {
+		return new Promise(res => {
 			// TODO - use Javascript's built in setInterval method to count down once per second
+			setInterval(() => {
+				document.getElementById('big-numbers').innerHTML = --timer
+				if(timer === 0) {
+					clearInterval()
+					res()
+				}
+			})
 
 			// run this DOM manipulation inside the set interval to decrement the countdown for the user
-			document.getElementById('big-numbers').innerHTML = --timer
 
 			// TODO - when the setInterval timer hits 0, clear the interval, resolve the promise, and return
 
@@ -183,6 +196,7 @@ function handleSelectTrack(target) {
 function handleAccelerate() {
 	console.log("accelerate button clicked")
 	// TODO - Invoke the API call to accelerate
+	accelerate();
 }
 
 // HTML VIEWS ------------------------------------------------
@@ -341,6 +355,10 @@ function getTracks() {
 	// GET request to `${SERVER}/api/tracks`
 
 	// TODO: Fetch tracks
+	fetch(`${SERVER}/api/tracks`)
+		.then(res => res.json())
+		.then(data => console.log(data))
+		.catch(err => console.log(err))
 	// TIP: Don't forget a catch statement!
 }
 
@@ -348,6 +366,10 @@ function getRacers() {
 	// GET request to `${SERVER}/api/cars`
 
 	// TODO: Fetch racers
+	fetch(`${SERVER}/api/cars`)
+		.then(res => res.json())
+		.then(data => console.log(data))
+		.catch(err => console.log(err))
 	// TIP: Do a file search for "TODO" to make sure you find all the things you need to do! There are even some vscode plugins that will highlight todos for you
 }
 
@@ -368,6 +390,7 @@ function createRace(player_id, track_id) {
 
 function getRace(id) {
 	// GET request to `${SERVER}/api/races/${id}`
+	return fetch(`${SERVER}/api/races/${id}`)
 }
 
 function startRace(id) {
@@ -381,6 +404,10 @@ function startRace(id) {
 
 function accelerate(id) {
 	// POST request to `${SERVER}/api/races/${id}/accelerate`
+	return fetch(`${SERVER}/api/races/${id}/accelerate`, {
+		method: 'POST',
+		...defaultFetchOpts(),
+	})
 	// options parameter provided as defaultFetchOpts
 	// no body or datatype needed for this request
 }
